@@ -21,11 +21,18 @@ type Buff struct {
 
 // Fighter is figher
 type Fighter struct {
-	Name  string
-	Rank  int
-	Item  int
-	Props []int
-	Buffs []Buff
+	Name      string
+	Rank      int
+	Item      int
+	Props     []int
+	Buffs     []Buff
+	BaseAtk   []int
+	BaseDef   []int
+	BaseAs    []int
+	BaseHP    []int
+	CD        []int
+	SkillVal  []int
+	SkillType int
 }
 
 // Shuffle int array
@@ -57,6 +64,10 @@ func CheckMix(fighters []Fighter) Buff {
 var fighterSettings = map[int]Fighter{
 	1: Fighter{
 		Name:  "甲",
+		Props: []int{1, 2},
+	},
+	2: Fighter{
+		Name:  "乙",
 		Props: []int{1, 2},
 	},
 }
