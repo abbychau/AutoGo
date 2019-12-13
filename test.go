@@ -11,12 +11,15 @@ import (
 	ui "github.com/logrusorgru/aurora"
 )
 
-// Buff are buffs for fighters
-type Buff struct {
-	AtkUp   int
-	DefUp   int
-	DodgeUp int
-	CritUp  int
+// Effect are buffs or debuffs for fighters
+type Effect struct {
+	Atk         int
+	Def         int
+	Dodge       int
+	Crit        int
+	HP          int
+	MultiTarget int
+	TargetAlly  bool
 }
 
 // Fighter is figher
@@ -25,7 +28,7 @@ type Fighter struct {
 	Rank      int
 	Item      int
 	Props     []int
-	Buffs     []Buff
+	Buffs     []Effect
 	BaseAtk   []int
 	BaseDef   []int
 	BaseAs    []int
@@ -47,18 +50,19 @@ func Shuffle(vals []int) {
 }
 
 // CheckMix checks if fighter trigger buffs
-func CheckMix(fighters []Fighter) Buff {
+func CheckMix(fighters []Fighter) []Effect {
 	pc := map[int]int{}
 	for _, f := range fighters {
 		for _, p := range f.Props {
 			pc[p]++
 		}
 	}
-	bf := Buff{}
+	bf := Effect{}
 	if pc[1] > 3 {
-		bf.AtkUp += 10
+		bf.Atk += 10
+		bf.TargetAlly = true
 	}
-	return bf
+	return []Effect{bf}
 }
 
 var fighterSettings = map[int]Fighter{
@@ -106,39 +110,49 @@ func rankFormat(char string, rank int) ui.Value {
 	}
 	return ui.Bold(ui.BgBrightRed(char))
 }
-func main() {
 
+type styleFunc func(arg interface{}) ui.Value
+
+func drawBoxWith(temp [][]int, sf styleFunc) {
+	fmt.Print(ui.Bold(sf("｜－－－－－－－－－\n")))
+	for i := 0; i < len(temp); i++ {
+		fmt.Print(ui.Bold(sf("｜")))
+		for j := 0; j < len(temp[i]); j++ {
+			if temp[i][j] != 0 {
+				fmt.Print(rankFormat(ei[temp[i][j]], 3))
+			} else {
+				fmt.Print(ui.Cyan("　"))
+			}
+		}
+		fmt.Print(ui.Bold(sf("｜")))
+		fmt.Print("\n")
+	}
+	fmt.Print(ui.Bold(sf("－－－－－－－－－｜\n")))
+
+}
+
+func main() {
+	fmt.Print(ui.Bold(ui.Cyan("Welcome To AutoGo.\nEnter You Name: ")))
+	reader := bufio.NewReader(os.Stdin)
 	temp := [][]int{
 		{0, 0, 0, 0, 0, 0, 0, 0},
 		{0, 0, 0, 2, 3, 0, 0, 0},
 		{0, 0, 3, 9, 1, 0, 0, 0},
 		{0, 0, 5, 6, 7, 8, 0, 0},
 	}
+	// init pool
 	pool := []int{}
 	for k, v := range poolSetting {
 		for i := 0; i < v; i++ {
 			pool = append(pool, k)
 		}
 	}
-
-	fmt.Println("Hello,", ui.Magenta("Abby"))
+	myname, _ := reader.ReadString('\n')
+	fmt.Println("Hello,", ui.Magenta(myname))
+	drawBoxWith(temp, func(arg interface{}) ui.Value { return ui.Bold(ui.Yellow(arg)) })
 	holding := []int{}
 	for {
 		Shuffle(pool)
-		fmt.Print(ui.Bold(ui.Cyan("｜－－－－－－－－－\n")))
-		for i := 0; i < 8; i++ {
-			fmt.Print(ui.Bold(ui.Cyan("｜")))
-			for j := 0; j < 8; j++ {
-				if i <= 3 && temp[i][j] != 0 {
-					fmt.Print(rankFormat(ei[temp[i][j]], 3))
-				} else {
-					fmt.Print(ui.Cyan("　"))
-				}
-			}
-			fmt.Print(ui.Bold(ui.Cyan("｜")))
-			fmt.Print("\n")
-		}
-		fmt.Print(ui.Bold(ui.Cyan("－－－－－－－－－｜\n")))
 
 		fmt.Print(ui.Bold(ui.Cyan("Holding:")))
 		for i := 0; i < len(holding); i++ {
@@ -159,7 +173,6 @@ func main() {
 		}
 		fmt.Println(ui.Bold(ui.Cyan("Enter:")))
 
-		reader := bufio.NewReader(os.Stdin)
 		text, _ := reader.ReadString('\n')
 		fmt.Println(text)
 		v, _ := strconv.Atoi(text)
