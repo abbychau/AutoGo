@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	ui "github.com/logrusorgru/aurora"
@@ -100,6 +101,10 @@ var poolSetting = map[int]int{
 	9:  10,
 	10: 10,
 }
+var reader = bufio.NewReader(os.Stdin)
+
+var emptyRow = []int{0, 0, 0, 0, 0, 0, 0, 0}
+var emptyBoard = [][]int{emptyRow, emptyRow, emptyRow, emptyRow, emptyRow, emptyRow, emptyRow, emptyRow}
 
 func rankFormat(char string, rank int) ui.Value {
 	if rank == 1 {
@@ -109,6 +114,16 @@ func rankFormat(char string, rank int) ui.Value {
 		return ui.Cyan(char)
 	}
 	return ui.Bold(ui.BgBrightRed(char))
+}
+func cin() string {
+	text, _ := reader.ReadString('\n')
+	return strings.TrimSpace(text)
+}
+func coutError(txt string) {
+	fmt.Println(ui.Bold(ui.Red(txt)))
+}
+func cout(txt string) {
+	fmt.Print(txt)
 }
 
 type styleFunc func(arg interface{}) ui.Value
@@ -133,13 +148,13 @@ func drawBoxWith(temp [][]int, sf styleFunc) {
 
 func main() {
 	fmt.Print(ui.Bold(ui.Cyan("Welcome To AutoGo.\nEnter You Name: ")))
-	reader := bufio.NewReader(os.Stdin)
-	temp := [][]int{
-		{0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 2, 3, 0, 0, 0},
-		{0, 0, 3, 9, 1, 0, 0, 0},
-		{0, 0, 5, 6, 7, 8, 0, 0},
-	}
+
+	// temp := [][]int{
+	// 	{0, 0, 0, 0, 0, 0, 0, 0},
+	// 	{0, 0, 0, 2, 3, 0, 0, 0},
+	// 	{0, 0, 3, 9, 1, 0, 0, 0},
+	// 	{0, 0, 5, 6, 7, 8, 0, 0},
+	// }
 	// init pool
 	pool := []int{}
 	for k, v := range poolSetting {
@@ -149,15 +164,15 @@ func main() {
 	}
 	myname, _ := reader.ReadString('\n')
 	fmt.Println("Hello,", ui.Magenta(myname))
-	drawBoxWith(temp, func(arg interface{}) ui.Value { return ui.Bold(ui.Yellow(arg)) })
+	drawBoxWith(emptyBoard, func(arg interface{}) ui.Value { return ui.Bold(ui.Yellow(arg)) })
 	holding := []int{}
 	for {
 		Shuffle(pool)
 
 		fmt.Print(ui.Bold(ui.Cyan("Holding:")))
-		for i := 0; i < len(holding); i++ {
-			fmt.Print(holding[len(holding)-1])
-			holding = holding[:len(holding)-1]
+		for _, v := range holding {
+			fmt.Print(v)
+			//holding = holding[:len(holding)-1]
 			fmt.Print(" ")
 		}
 		fmt.Print("\n")
@@ -171,12 +186,39 @@ func main() {
 				fmt.Print("\n")
 			}
 		}
-		fmt.Println(ui.Bold(ui.Cyan("Enter:")))
+		fmt.Println(ui.Bold(ui.Cyan("Enter: (b)uy, (u)p, (s)ell, (d), (p)ut, (m)ove")))
 
-		text, _ := reader.ReadString('\n')
-		fmt.Println(text)
-		v, _ := strconv.Atoi(text)
-		holding = append(holding, v)
+		cmd := cin()
+		ticker := time.NewTicker(time.Second * 1)
+		for {
+			select {
+			case <-ticker.C:
+				break
+			}
+			if cmd == "b" {
+				cout("Which one? (1-5)")
+
+				v, _ := strconv.Atoi(cin())
+
+				if len(holding) == 8 {
+					coutError("Your hand is full.")
+				} else {
+
+					if v == 0 || v > 5 {
+						coutError("Invalid Input.")
+					} else {
+						holding = append(holding, v)
+					}
+				}
+			} else if cmd == "u" {
+			} else if cmd == "s" {
+			} else if cmd == "d" {
+			} else if cmd == "p" {
+			} else if cmd == "m" {
+			} else {
+				coutError("Invalid Input.")
+			}
+		}
 		t := time.Now()
 		h, m, s := t.Clock()
 		fmt.Println("Time: ", h, ":", m, ":", s)
