@@ -128,10 +128,11 @@ func cout(txt string) {
 
 type styleFunc func(arg interface{}) ui.Value
 
+// https://en.wikipedia.org/wiki/Box-drawing_character
 func drawBoxWith(temp [][]int, sf styleFunc) {
-	fmt.Print(ui.Bold(sf("｜－－－－－－－－－\n")))
+	fmt.Print(ui.Bold(sf("┏━━━━━━━━━━━━━━━━━━┓\n")))
 	for i := 0; i < len(temp); i++ {
-		fmt.Print(ui.Bold(sf("｜")))
+		fmt.Print(ui.Bold(sf("┃ ")))
 		for j := 0; j < len(temp[i]); j++ {
 			if temp[i][j] != 0 {
 				fmt.Print(rankFormat(ei[temp[i][j]], 3))
@@ -139,10 +140,10 @@ func drawBoxWith(temp [][]int, sf styleFunc) {
 				fmt.Print(ui.Cyan("　"))
 			}
 		}
-		fmt.Print(ui.Bold(sf("｜")))
+		fmt.Print(ui.Bold(sf(" ┃")))
 		fmt.Print("\n")
 	}
-	fmt.Print(ui.Bold(sf("－－－－－－－－－｜\n")))
+	fmt.Print(ui.Bold(sf("┗━━━━━━━━━━━━━━━━━━┛\n")))
 
 }
 
