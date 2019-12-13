@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	spinner "github.com/briandowns/spinner"
+
 	ui "github.com/logrusorgru/aurora"
 )
 
@@ -76,6 +78,7 @@ var fighterSettings = map[int]Fighter{
 		Props: []int{1, 2},
 	},
 }
+var spinnerChar = "⣾⣽⣻⢿⡿⣟⣯⣷"
 var ei = map[int]string{
 	1:  "甲",
 	2:  "乙",
@@ -190,11 +193,17 @@ func main() {
 		fmt.Println(ui.Bold(ui.Cyan("Enter: (b)uy, (u)p, (s)ell, (d), (p)ut, (m)ove")))
 
 		cmd := cin()
-		ticker := time.NewTicker(time.Second * 1)
+		tickChan := time.NewTicker(time.Second * 1)
+		s := spinner.New(spinner.CharSets[9], time.Duration(10)*time.Millisecond)
+		s.Start()
+	L:
 		for {
 			select {
-			case <-ticker.C:
-				break
+			case <-tickChan.C:
+				fmt.Println("Ticker ticked")
+
+				break L
+			default:
 			}
 			if cmd == "b" {
 				cout("Which one? (1-5)")
@@ -220,8 +229,10 @@ func main() {
 				coutError("Invalid Input.")
 			}
 		}
-		t := time.Now()
-		h, m, s := t.Clock()
-		fmt.Println("Time: ", h, ":", m, ":", s)
+		print("test")
+		s.Stop()
+		//ti := time.Now()
+		//h, m, s := ti.Clock()
+		//fmt.Println("Time: ", h, ":", m, ":", s)
 	}
 }
