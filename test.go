@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	spinner "github.com/briandowns/spinner"
-
 	ui "github.com/logrusorgru/aurora"
 )
 
@@ -78,7 +76,6 @@ var fighterSettings = map[int]Fighter{
 		Props: []int{1, 2},
 	},
 }
-var spinnerChar = "⣾⣽⣻⢿⡿⣟⣯⣷"
 var ei = map[int]string{
 	1:  "甲",
 	2:  "乙",
@@ -107,7 +104,7 @@ var poolSetting = map[int]int{
 var reader = bufio.NewReader(os.Stdin)
 
 var emptyRow = []int{0, 0, 0, 0, 0, 0, 0, 0}
-var emptyBoard = [][]int{emptyRow, emptyRow, emptyRow, emptyRow, emptyRow, emptyRow, emptyRow, emptyRow}
+var emptyBoard = [][]int{emptyRow, emptyRow}
 
 func rankFormat(char string, rank int) ui.Value {
 	if rank == 1 {
@@ -168,21 +165,13 @@ func main() {
 	}
 	myname, _ := reader.ReadString('\n')
 	fmt.Println("Hello,", ui.Magenta(myname))
-	drawBoxWith(emptyBoard, func(arg interface{}) ui.Value { return ui.Bold(ui.Yellow(arg)) })
+
 	holding := []int{}
 	for {
 		Shuffle(pool)
-
-		fmt.Print(ui.Bold(ui.Cyan("Holding:")))
-		for _, v := range holding {
-			fmt.Print(v)
-			//holding = holding[:len(holding)-1]
-			fmt.Print(" ")
-		}
-		fmt.Print("\n")
-		fmt.Println(ui.Bold(ui.Cyan("Shop:")))
+		shop := []int{}
 		for i := 0; i < 5; i++ {
-			fmt.Print(ei[pool[len(pool)-1]])
+			shop = append(shop, pool[len(pool)-1])
 			pool = pool[:len(pool)-1]
 			if i != 4 {
 				fmt.Print(" ")
@@ -190,34 +179,40 @@ func main() {
 				fmt.Print("\n")
 			}
 		}
-		fmt.Println(ui.Bold(ui.Cyan("Enter: (b)uy, (u)p, (s)ell, (d), (p)ut, (m)ove")))
 
-		cmd := cin()
-		tickChan := time.NewTicker(time.Second * 1)
-		s := spinner.New(spinner.CharSets[9], time.Duration(10)*time.Millisecond)
-		s.Start()
-	L:
+		drawBoxWith(emptyBoard, func(arg interface{}) ui.Value { return ui.Bold(ui.Yellow(arg)) })
 		for {
-			select {
-			case <-tickChan.C:
-				fmt.Println("Ticker ticked")
-
-				break L
-			default:
+			fmt.Print(ui.Bold(ui.Cyan("Holding: ")))
+			for _, v := range holding {
+				fmt.Print(ei[v])
+				//holding = holding[:len(holding)-1]
+				fmt.Print(" ")
 			}
-			if cmd == "b" {
-				cout("Which one? (1-5)")
+			fmt.Print("\n")
+			fmt.Print(ui.Bold(ui.Cyan("   Shop: ")))
+			for i, c := range shop {
+				fmt.Print(ei[c])
+				if i != 4 {
+					fmt.Print(" ")
+				} else {
+					fmt.Print("\n")
+				}
+			}
 
-				v, _ := strconv.Atoi(cin())
+			fmt.Println(ui.Bold(ui.Cyan("Enter: (b)uy, (u)p, (s)ell, (d), (p)ut, (m)ove")))
+
+			cmd := cin()
+			if cmd == "b" {
 
 				if len(holding) == 8 {
 					coutError("Your hand is full.")
 				} else {
-
+					cout("Which one? (1-5)")
+					v, _ := strconv.Atoi(cin())
 					if v == 0 || v > 5 {
 						coutError("Invalid Input.")
 					} else {
-						holding = append(holding, v)
+						holding = append(holding, shop[v-1])
 					}
 				}
 			} else if cmd == "u" {
@@ -225,12 +220,14 @@ func main() {
 			} else if cmd == "d" {
 			} else if cmd == "p" {
 			} else if cmd == "m" {
+			} else if cmd == "next" {
+				break
 			} else {
 				coutError("Invalid Input.")
 			}
 		}
 		print("test")
-		s.Stop()
+
 		//ti := time.Now()
 		//h, m, s := ti.Clock()
 		//fmt.Println("Time: ", h, ":", m, ":", s)
