@@ -77,6 +77,7 @@ var fighterSettings = map[int]Fighter{
 	},
 }
 var ei = map[int]string{
+	0:  "  ",
 	1:  "甲",
 	2:  "乙",
 	3:  "丙",
@@ -209,10 +210,12 @@ func main() {
 				} else {
 					cout("Which one? (1-5)")
 					v, _ := strconv.Atoi(cin())
-					if v == 0 || v > 5 {
+					if v == 0 || v > 5 || shop[v-1] == 0 {
 						coutError("Invalid Input.")
 					} else {
 						holding = append(holding, shop[v-1])
+
+						shop[v-1] = 0
 					}
 				}
 			} else if cmd == "u" {
